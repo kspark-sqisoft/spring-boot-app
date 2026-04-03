@@ -187,7 +187,7 @@ docker logs spring-board-api-dev --tail 100
 ## 6. 자주 겪는 이슈
 
 1. **프론트 로그가 안 보인다**  
-   개발 Compose에서는 `frontend`가 `backend` **healthy** 이후에 시작합니다. 백엔드 로그에서 DB 연결·설정 오류를 먼저 해결하세요. (`STUDY.md` 7절 참고)
+   개발 Compose에서는 `frontend`가 `backend` **healthy** 이후에 시작합니다. 백엔드 로그에서 DB 연결·설정 오류를 먼저 해결하세요. (`STUDY.md` 8절 참고)
 
 2. **포트 이미 사용 중**  
    다른 Postgres(5432)나 다른 앱이 3000/8080/5173을 쓰면 실패합니다. 해당 프로세스를 끄거나 `docker-compose*.yml`의 `ports:` 를 수정하세요.
