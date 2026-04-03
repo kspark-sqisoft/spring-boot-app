@@ -2,7 +2,7 @@
 
 이 저장소는 `d:\Study\Docker\docker_app` 과 **동일한 HTTP API 계약**(경로·JSON 필드명·인증 방식)을 유지하면서, 백엔드만 **Java 17 + Spring Boot 4** 로 구현한 예제입니다. 프론트엔드는 React 19, Tailwind CSS 4, shadcn/ui, TanStack Query 등 기존 스택을 그대로 사용합니다.
 
-**프론트 SPA**는 로그인·회원가입·프로필만 두었고, **게시판 목록/글 보기/작성 UI는 없습니다.** `/api/posts` 등 게시판 API는 백엔드에 그대로 있으며, API 클라이언트·Postman 등으로 호출할 수 있습니다.
+**프론트 SPA**는 로그인·회원가입·프로필·게시판(목록·상세·작성·수정) UI를 포함합니다. 백엔드 API는 **Swagger UI**로도 호출·스펙 확인이 가능합니다(아래 Swagger 절).
 
 ---
 
@@ -96,7 +96,7 @@ docker compose -f docker-compose.dev.yml up --build
 
 기능(feature)마다 `controller` / `service` / `repository` / `entity` / `dto` 를 두는 형태입니다(루트 패키지는 `com.noa99kee.board`).
 
-- `config` — `SecurityConfig`, `WebConfig`(CORS, `/uploads` 리소스 핸들러), JWT/업로드 설정 바인딩
+- `config` — `SecurityConfig`, `WebConfig`(CORS, `/uploads` 리소스 핸들러), JWT/업로드 설정 바인딩, `OpenApiConfig`(Swagger UI용 OpenAPI 메타·JWT Bearer 스키마)
 - `auth` — `controller`(회원가입·로그인·로그아웃·리프레시), `service`(`AuthService`, `JwtService`), `dto`, `filter`(`JwtAuthenticationFilter`), `principal`(`BoardUserPrincipal`), `util`(`TokenHasher`)
 - `user` — `controller`(`GET/PATCH/POST /api/auth/me` … 프론트 계약 유지), `service`, `repository`, `entity`, `dto`
 - `post` — `controller`, `service`, `repository`, `entity`, `dto`(게시글 CRUD·이미지 URL 검증, `/uploads/posts/` 만 허용)
@@ -107,6 +107,34 @@ docker compose -f docker-compose.dev.yml up --build
 
 - 공개: `GET /api/health`, `GET /api/posts`, `GET /api/posts/{id}`, `POST /api/auth/register|login|refresh`, `/uploads/**`
 - 인증 필요: 글 작성·수정·삭제, 이미지 업로드, 프로필, 로그아웃 등
+
+### 5.1 Swagger UI (OpenAPI 3)
+
+백엔드에 **SpringDoc OpenAPI**(`springdoc-openapi-starter-webmvc-ui`)를 두어, 런타임에 스펙을 생성하고 **Swagger UI**로 브라우저에서 API를 읽고 호출할 수 있습니다.
+
+**`/v3/api-docs` 는 사람용 HTML이 아니라 스펙 원본(JSON)** 이라서 브라우저에 JSON만 보이는 것이 정상입니다. 버튼·설명이 있는 문서는 **Swagger UI** 주소로 엽니다.
+
+| 항목 | 내용 |
+|------|------|
+| UI 주소 | `http://호스트:포트/swagger-ui/index.html` (기본 포트는 `SERVER_PORT`, 보통 `3000`). `/swagger-ui.html` 로 들어가도 UI로 연결됩니다. |
+| 스펙 JSON | `http://호스트:포트/v3/api-docs` — 기계·도구용. Swagger UI가 내부적으로 이 URL에서 스펙을 불러옵니다. |
+| Gradle | `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2` (`build.gradle`의 `dependencies`) |
+| 설정 | `application.properties` — `springdoc.swagger-ui.path=/swagger-ui`, `springdoc.api-docs.path=/v3/api-docs` |
+| 보안 | `SecurityConfig`에서 `/swagger-ui.html`, `/swagger-ui/**`, `/v3/api-docs`, `/v3/api-docs/**` 는 **인증 없이 허용**(`permitAll`)합니다. 그 외 API 규칙은 기존과 동일합니다. |
+| JWT 시험 | UI 상단 **Authorize** → `bearerAuth`에 액세스 토큰만 입력하거나 `Bearer ` 접두사를 포함해 입력(SpringDoc이 스키마로 `HTTP Bearer`를 노출). 토큰은 `POST /api/auth/login` 또는 `register` 응답 JSON의 `accessToken`을 복사합니다. |
+| 코드 | `com.noa99kee.board.config.OpenApiConfig` — API 제목·설명·버전과 Bearer 스키마 이름(`bearerAuth`) 정의. |
+| IDE | 일부 IDE는 전이 의존성만으로 `io.swagger.v3.oas.models` 를 못 잡을 수 있어, `io.swagger.core.v3:swagger-models-jakarta:2.2.43` 을 **직접** `implementation` 으로 선언해 두었습니다. |
+| 로그 | `HttpRequestLoggingFilter`에서 `/swagger-ui`, `/v3/api-docs` 요청은 헬스와 같이 **DEBUG**만 남기도록 해 두어 INFO 로그가 지나치게 늘지 않게 했습니다. |
+
+**운영 배포 시**에는 문서·스펙을 외부에 노출하지 않으려면 프로필로 끄는 것이 일반적입니다.
+
+```properties
+# 예: application-prod.properties
+springdoc.api-docs.enabled=false
+springdoc.swagger-ui.enabled=false
+```
+
+로컬·학습용 기본 `application.properties` 에는 위 비활성화를 넣지 않았습니다.
 
 ---
 

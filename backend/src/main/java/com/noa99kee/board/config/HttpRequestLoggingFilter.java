@@ -37,7 +37,10 @@ public class HttpRequestLoggingFilter extends OncePerRequestFilter {
 		String path = request.getRequestURI();
 		String query = request.getQueryString();
 		String pathWithQuery = query == null ? path : path + "?" + query;
-		boolean quiet = path.startsWith("/api/health");
+		boolean quiet =
+				path.startsWith("/api/health")
+						|| path.startsWith("/swagger-ui")
+						|| path.startsWith("/v3/api-docs");
 
 		if (quiet) {
 			log.debug("HTTP -> {} {}", method, pathWithQuery);

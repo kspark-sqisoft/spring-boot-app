@@ -63,7 +63,13 @@ public class SecurityConfig {
 		http.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.authorizeHttpRequests(
 				auth ->
-						auth.requestMatchers(HttpMethod.GET, "/api/health", "/api/health/**")
+						auth.requestMatchers(
+										"/swagger-ui.html",
+										"/swagger-ui/**",
+										"/v3/api-docs",
+										"/v3/api-docs/**")
+								.permitAll()
+								.requestMatchers(HttpMethod.GET, "/api/health", "/api/health/**")
 								.permitAll()
 								.requestMatchers(
 										HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh")
