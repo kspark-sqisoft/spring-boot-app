@@ -25,6 +25,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
+    # 이미지에 박힌 엔트리포인트는 up 만으로 갱신되지 않음. 호스트 스크립트를 쓰고 sh 로 실행(+x 불필요).
+    entrypoint: ['sh', '/usr/local/bin/docker-dev-entrypoint.sh']
     container_name: spring-board-api-dev
     ports:
       - '3000:3000'
@@ -41,9 +43,12 @@ services:
       JWT_REFRESH_EXPIRES_DAYS: ${JWT_REFRESH_EXPIRES_DAYS:-7}
       REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-false}
       UPLOADS_DIR: /app/uploads
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080}
+      # 개발 스택은 .env 의 CORS_ORIGIN 을 쓰지 않습니다(잘못된 값이면 403 Invalid CORS 만 반복됨).
+      # 항상 비워 두어 백엔드가 allowedOriginPattern("*") 로 동작하게 합니다.
+      CORS_ORIGIN: ''
     volumes:
       - ./backend:/app
+      - ./backend/docker-dev-entrypoint.sh:/usr/local/bin/docker-dev-entrypoint.sh:ro
       - gradle_cache:/gradle-cache
       - backend_uploads_dev:/app/uploads
     depends_on:

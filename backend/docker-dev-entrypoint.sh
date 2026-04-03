@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
 cd /app
-exec ./gradlew bootRun --no-daemon
+exec sh ./gradlew bootRun --no-daemon

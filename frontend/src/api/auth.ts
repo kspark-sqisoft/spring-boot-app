@@ -1,4 +1,5 @@
 import { apiFetch } from '@/lib/api-fetch';
+import { parseApiErrorResponse } from '@/lib/parse-api-error';
 
 /**
  * JWT 액세스 토큰(Bearer) + httpOnly 리프레시 쿠키. fetch 시 credentials: 'include' 필수.
@@ -23,18 +24,6 @@ function throwHttpError(res: Response, message: string): never {
   const err = new Error(message) as FetchError;
   err.status = res.status;
   throw err;
-}
-
-async function parseErrorMessage(res: Response, fallback: string): Promise<string> {
-  try {
-    const body = (await res.json()) as { message?: string | string[] };
-    const m = body.message;
-    if (Array.isArray(m)) return m.join(', ');
-    if (typeof m === 'string') return m;
-  } catch {
-    /* ignore */
-  }
-  return fallback;
 }
 
 let refreshInFlight: Promise<AuthPayload | null> | null = null;
@@ -70,7 +59,10 @@ export async function registerAuth(input: {
     body: JSON.stringify(input),
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '회원가입에 실패했습니다.'));
+    throwHttpError(
+      res,
+      await parseApiErrorResponse(res, '회원가입에 실패했습니다.'),
+    );
   }
   return (await res.json()) as AuthPayload;
 }
@@ -86,7 +78,10 @@ export async function loginAuth(input: {
     body: JSON.stringify(input),
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '로그인에 실패했습니다.'));
+    throwHttpError(
+      res,
+      await parseApiErrorResponse(res, '로그인에 실패했습니다.'),
+    );
   }
   return (await res.json()) as AuthPayload;
 }
@@ -101,7 +96,10 @@ export async function logoutAuth(accessToken: string): Promise<void> {
     },
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '로그아웃에 실패했습니다.'));
+    throwHttpError(
+      res,
+      await parseApiErrorResponse(res, '로그아웃에 실패했습니다.'),
+    );
   }
 }
 
@@ -128,7 +126,10 @@ export async function updateProfileName(
     body: JSON.stringify({ name }),
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '이름 저장에 실패했습니다.'));
+    throwHttpError(
+      res,
+      await parseApiErrorResponse(res, '이름 저장에 실패했습니다.'),
+    );
   }
   return (await res.json()) as AuthUser;
 }
@@ -146,7 +147,10 @@ export async function uploadAvatar(
     body,
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '이미지 업로드에 실패했습니다.'));
+    throwHttpError(
+      res,
+      await parseApiErrorResponse(res, '이미지 업로드에 실패했습니다.'),
+    );
   }
   return (await res.json()) as AuthUser;
 }

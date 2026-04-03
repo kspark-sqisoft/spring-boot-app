@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * Spring Security: 어떤 URL을 익명 허용할지, 세션을 쓸지, 어떤 필터를 끼워 넣을지 정의합니다.
@@ -47,23 +47,28 @@ public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final HttpRequestLoggingFilter httpRequestLoggingFilter;
+	private final CorsConfigurationSource corsConfigurationSource;
 
 	public SecurityConfig(
 			JwtAuthenticationFilter jwtAuthenticationFilter,
-			HttpRequestLoggingFilter httpRequestLoggingFilter) {
+			HttpRequestLoggingFilter httpRequestLoggingFilter,
+			CorsConfigurationSource corsConfigurationSource) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.httpRequestLoggingFilter = httpRequestLoggingFilter;
+		this.corsConfigurationSource = corsConfigurationSource;
 	}
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		// REST API + JWT에서는 CSRF 토큰을 브라우저 폼에 실어 보내기 어려워 보통 비활성화합니다(대신 쿠키 SameSite 등으로 완화).
 		http.csrf(AbstractHttpConfigurer::disable);
-		http.cors(Customizer.withDefaults());
+		http.cors(c -> c.configurationSource(corsConfigurationSource));
 		http.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.authorizeHttpRequests(
 				auth ->
-						auth.requestMatchers(
+						auth.requestMatchers(HttpMethod.OPTIONS, "/**")
+								.permitAll()
+								.requestMatchers(
 										"/swagger-ui.html",
 										"/swagger-ui/**",
 										"/v3/api-docs",
@@ -85,9 +90,18 @@ public class SecurityConfig {
 		http.exceptionHandling(
 				ex ->
 						ex.authenticationEntryPoint(
-								(request, response, authException) ->
+								(request, response, authException) -> {
+									if (request.getRequestURI().startsWith("/api/")) {
+										response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+										response.setCharacterEncoding("UTF-8");
+										response.setContentType("application/json;charset=UTF-8");
+										response.getWriter().write(
+												"{\"statusCode\":401,\"message\":\"인증이 필요합니다.\"}");
+									} else {
 										response.sendError(
-												HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")));
+												HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+									}
+								}));
 		// JWT 필터를 먼저 등록한 뒤, 그 앞에 요청 로깅 필터를 둡니다(Spring Security 7은 기준 필터가 먼저 체인에 있어야 함).
 		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(httpRequestLoggingFilter, JwtAuthenticationFilter.class);

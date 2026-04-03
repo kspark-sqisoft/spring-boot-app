@@ -41,14 +41,9 @@ public class WebConfig implements WebMvcConfigurer {
 		CorsConfiguration c = new CorsConfiguration();
 		String origins = corsConfigProps.allowedOrigins();
 		if (origins == null || origins.isBlank()) {
-			c.setAllowedOrigins(
-					List.of(
-							"http://localhost:5173",
-							"http://127.0.0.1:5173",
-							"http://localhost:8080",
-							"http://127.0.0.1:8080",
-							"http://localhost:3000",
-							"http://127.0.0.1:3000"));
+			// credentials=true 일 때도 Spring은 패턴 "*" 에 대해 요청 Origin 을 그대로 반사합니다.
+			// LAN IP·다른 호스트로 Vite 접속 시 고정 목록만으로는 403 Invalid CORS 가 납니다.
+			c.addAllowedOriginPattern("*");
 		} else {
 			c.setAllowedOrigins(
 					Arrays.stream(origins.split(","))

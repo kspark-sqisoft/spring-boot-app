@@ -2,6 +2,7 @@
  * 게시글 API. 작성·수정·삭제는 Bearer 토큰 필요, 목록·상세는 공개.
  */
 import { apiFetch } from '@/lib/api-fetch';
+import { parseApiErrorResponse } from '@/lib/parse-api-error';
 
 export type PostListItem = {
   id: string;
@@ -25,18 +26,6 @@ function throwHttpError(res: Response, message: string): never {
   throw err;
 }
 
-async function parseErrorMessage(res: Response, fallback: string): Promise<string> {
-  try {
-    const body = (await res.json()) as { message?: string | string[] };
-    const m = body.message;
-    if (Array.isArray(m)) return m.join(', ');
-    if (typeof m === 'string') return m;
-  } catch {
-    /* ignore */
-  }
-  return fallback;
-}
-
 export const postsKeys = {
   all: ['posts'] as const,
   list: () => [...postsKeys.all, 'list'] as const,
@@ -46,7 +35,7 @@ export const postsKeys = {
 export async function fetchPostList(): Promise<PostListItem[]> {
   const res = await apiFetch('/api/posts', { credentials: 'include' });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '목록을 불러오지 못했습니다.'));
+    throwHttpError(res, await parseApiErrorResponse(res, '목록을 불러오지 못했습니다.'));
   }
   return (await res.json()) as PostListItem[];
 }
@@ -54,7 +43,7 @@ export async function fetchPostList(): Promise<PostListItem[]> {
 export async function fetchPost(id: string): Promise<PostDetail> {
   const res = await apiFetch(`/api/posts/${id}`, { credentials: 'include' });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '글을 불러오지 못했습니다.'));
+    throwHttpError(res, await parseApiErrorResponse(res, '글을 불러오지 못했습니다.'));
   }
   return (await res.json()) as PostDetail;
 }
@@ -72,7 +61,7 @@ export async function uploadPostImage(
     credentials: 'include',
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '이미지 업로드에 실패했습니다.'));
+    throwHttpError(res, await parseApiErrorResponse(res, '이미지 업로드에 실패했습니다.'));
   }
   return (await res.json()) as { url: string };
 }
@@ -91,7 +80,7 @@ export async function createPost(
     credentials: 'include',
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '작성에 실패했습니다.'));
+    throwHttpError(res, await parseApiErrorResponse(res, '작성에 실패했습니다.'));
   }
   return (await res.json()) as PostDetail;
 }
@@ -111,7 +100,7 @@ export async function updatePost(
     credentials: 'include',
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '수정에 실패했습니다.'));
+    throwHttpError(res, await parseApiErrorResponse(res, '수정에 실패했습니다.'));
   }
   return (await res.json()) as PostDetail;
 }
@@ -123,6 +112,6 @@ export async function deletePost(token: string, id: string): Promise<void> {
     credentials: 'include',
   });
   if (!res.ok) {
-    throwHttpError(res, await parseErrorMessage(res, '삭제에 실패했습니다.'));
+    throwHttpError(res, await parseApiErrorResponse(res, '삭제에 실패했습니다.'));
   }
 }

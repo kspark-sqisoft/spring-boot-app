@@ -1,6 +1,7 @@
 package com.noa99kee.board.auth.filter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import com.noa99kee.board.auth.principal.BoardUserPrincipal;
@@ -70,9 +71,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			SecurityContextHolder.getContext().setAuthentication(auth);
 		} catch (JwtException | IllegalArgumentException ex) {
 			SecurityContextHolder.clearContext();
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired access token");
+			writeUnauthorizedJson(request, response);
 			return;
 		}
 		filterChain.doFilter(request, response);
+	}
+
+	private static void writeUnauthorizedJson(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
+		String uri = request.getRequestURI();
+		if (uri != null && uri.startsWith("/api/")) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setCharacterEncoding("UTF-8");
+			response.setContentType("application/json;charset=UTF-8");
+			byte[] body =
+					"{\"statusCode\":401,\"message\":\"액세스 토큰이 유효하지 않거나 만료되었습니다.\"}"
+							.getBytes(StandardCharsets.UTF_8);
+			response.getOutputStream().write(body);
+		} else {
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired access token");
+		}
 	}
 }
