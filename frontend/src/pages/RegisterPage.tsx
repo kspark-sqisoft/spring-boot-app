@@ -45,6 +45,7 @@ export function RegisterPage() {
         </CardHeader>
         <CardContent>
           <RegisterForm
+            cancelHref="/posts"
             onSuccess={() => navigate('/posts', { replace: true })}
           />
         </CardContent>

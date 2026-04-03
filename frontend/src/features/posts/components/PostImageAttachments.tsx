@@ -1,50 +1,45 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { ImagePlus, Loader2, X } from 'lucide-react';
 import { uploadPostImage } from '@/api/posts';
+import { useAuthStore } from '@/features/auth/store/auth-store';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-
-type PostImageAttachmentsProps = {
-  accessToken: string;
-  imageUrls: string[];
-  onChange: (urls: string[]) => void;
-  disabled?: boolean;
-  className?: string;
-  /** 업로드 중에는 등록 버튼 등과 연동 */
-  onBusyChange?: (busy: boolean) => void;
-};
+import { Label } from '@/components/ui/label';
 
 const MAX_IMAGES = 5;
+const MAX_BYTES = 5 * 1024 * 1024;
+
+type PostImageAttachmentsProps = {
+  urls: string[];
+  onChange: (urls: string[]) => void;
+  disabled?: boolean;
+};
 
 export function PostImageAttachments({
-  accessToken,
-  imageUrls,
+  urls,
   onChange,
-  disabled,
-  className,
-  onBusyChange,
+  disabled = false,
 }: PostImageAttachmentsProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    onBusyChange?.(uploading);
-  }, [uploading, onBusyChange]);
-
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (!file) return;
-    if (imageUrls.length >= MAX_IMAGES) {
+    if (!file || !accessToken) return;
+    if (urls.length >= MAX_IMAGES) {
       setError(`이미지는 최대 ${MAX_IMAGES}장입니다.`);
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      setError('파일은 5MB 이하여야 합니다.');
       return;
     }
     setError(null);
     setUploading(true);
     try {
       const { url } = await uploadPostImage(accessToken, file);
-      onChange([...imageUrls, url]);
+      onChange([...urls, url]);
     } catch (err) {
       setError(err instanceof Error ? err.message : '업로드 실패');
     } finally {
@@ -52,72 +47,64 @@ export function PostImageAttachments({
     }
   }
 
-  function removeAt(index: number) {
-    onChange(imageUrls.filter((_, i) => i !== index));
+  function removeAt(i: number) {
+    onChange(urls.filter((_, j) => j !== i));
   }
 
   return (
-    <div className={cn('space-y-3', className)}>
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="hidden"
-          onChange={(e) => void handleFileChange(e)}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={
-            disabled || uploading || imageUrls.length >= MAX_IMAGES
-          }
-          className="gap-1.5"
-          onClick={() => inputRef.current?.click()}
-        >
-          {uploading ? (
-            <Loader2 className="size-3.5 animate-spin" aria-hidden />
-          ) : (
-            <ImagePlus className="size-3.5" aria-hidden />
-          )}
-          이미지 추가
-        </Button>
-        <span className="text-muted-foreground text-xs">
-          jpeg, png, webp, gif · 최대 {MAX_IMAGES}장 · 파일당 5MB
-        </span>
-      </div>
-      {error ? (
-        <p className="text-destructive text-xs" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {imageUrls.length > 0 ? (
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {imageUrls.map((url, i) => (
-            <li
-              key={`${url}-${i}`}
-              className="relative overflow-hidden rounded-lg ring-1 ring-border"
+    <div className="space-y-2">
+      <Label>본문 이미지 (선택, 최대 {MAX_IMAGES}장)</Label>
+      <div className="flex flex-wrap gap-2">
+        {urls.map((u, i) => (
+          <div
+            key={u}
+            className="border-border relative inline-flex h-16 w-16 overflow-hidden rounded-md border"
+          >
+            <img src={u} alt="" className="size-full object-cover" />
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => removeAt(i)}
+              className="bg-background/90 absolute top-0.5 right-0.5 rounded p-0.5"
+              aria-label="첨부 제거"
             >
-              <img
-                src={url}
-                alt=""
-                className="bg-muted/40 aspect-video max-h-48 w-full object-contain"
-              />
-              <Button
-                type="button"
-                size="icon"
-                variant="secondary"
-                className="absolute right-2 top-2 size-8 opacity-90 shadow-sm"
-                disabled={disabled || uploading}
-                onClick={() => removeAt(i)}
-                aria-label="이미지 제거"
-              >
-                <X className="size-4" aria-hidden />
-              </Button>
-            </li>
-          ))}
-        </ul>
+              <X className="size-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
+      {urls.length < MAX_IMAGES ? (
+        <div>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            className="hidden"
+            id="post-img-upload"
+            disabled={disabled || uploading || !accessToken}
+            onChange={(e) => void onPick(e)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={disabled || uploading || !accessToken}
+            onClick={() => document.getElementById('post-img-upload')?.click()}
+          >
+            {uploading ? (
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
+            ) : (
+              <ImagePlus className="size-3.5" aria-hidden />
+            )}
+            이미지 추가
+          </Button>
+        </div>
+      ) : null}
+      {error ? <p className="text-destructive text-xs">{error}</p> : null}
+      {!accessToken ? (
+        <p className="text-muted-foreground text-xs">
+          이미지 업로드는 로그인 후 가능합니다.
+        </p>
       ) : null}
     </div>
   );

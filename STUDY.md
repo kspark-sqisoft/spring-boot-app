@@ -2,6 +2,8 @@
 
 이 저장소는 `d:\Study\Docker\docker_app` 과 **동일한 HTTP API 계약**(경로·JSON 필드명·인증 방식)을 유지하면서, 백엔드만 **Java 17 + Spring Boot 4** 로 구현한 예제입니다. 프론트엔드는 React 19, Tailwind CSS 4, shadcn/ui, TanStack Query 등 기존 스택을 그대로 사용합니다.
 
+**프론트 SPA**는 로그인·회원가입·프로필만 두었고, **게시판 목록/글 보기/작성 UI는 없습니다.** `/api/posts` 등 게시판 API는 백엔드에 그대로 있으며, API 클라이언트·Postman 등으로 호출할 수 있습니다.
+
 ---
 
 ## 1. 아키텍처 한눈에

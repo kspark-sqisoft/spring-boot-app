@@ -1,7 +1,8 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from '@/app/layouts/RootLayout';
 import { PostsLayout } from '@/app/layouts/PostsLayout';
 import { RequireAuth } from '@/features/auth/components/RequireAuth';
+import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { PostCreatePage } from '@/pages/PostCreatePage';
@@ -11,7 +12,7 @@ import { PostListPage } from '@/pages/PostListPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { RegisterPage } from '@/pages/RegisterPage';
 
-/** 라우트 메타 — `PageTitleHeading` 에서 제목으로 사용 */
+/** 라우트 메타(확장용) */
 export type AppRouteHandle = {
   title?: string;
 };
@@ -21,7 +22,11 @@ export const router = createBrowserRouter([
     path: '/',
     element: <RootLayout />,
     children: [
-      { index: true, element: <Navigate to="/posts" replace /> },
+      {
+        index: true,
+        element: <HomePage />,
+        handle: { title: '홈' } satisfies AppRouteHandle,
+      },
       {
         path: 'login',
         element: <LoginPage />,
@@ -43,36 +48,35 @@ export const router = createBrowserRouter([
       },
       {
         path: 'posts',
-        handle: { title: '게시판' } satisfies AppRouteHandle,
         element: <PostsLayout />,
         children: [
           {
             index: true,
             element: <PostListPage />,
-            handle: { title: '게시판' } satisfies AppRouteHandle,
+            handle: { title: '글 목록' } satisfies AppRouteHandle,
           },
           {
             path: 'new',
-            handle: { title: '글 작성' } satisfies AppRouteHandle,
             element: (
               <RequireAuth>
                 <PostCreatePage />
               </RequireAuth>
             ),
+            handle: { title: '글쓰기' } satisfies AppRouteHandle,
           },
           {
-            path: ':postId/edit',
-            handle: { title: '글 수정' } satisfies AppRouteHandle,
+            path: ':id/edit',
             element: (
               <RequireAuth>
                 <PostEditPage />
               </RequireAuth>
             ),
+            handle: { title: '글 수정' } satisfies AppRouteHandle,
           },
           {
-            path: ':postId',
+            path: ':id',
             element: <PostDetailPage />,
-            handle: { title: '글 보기' } satisfies AppRouteHandle,
+            handle: { title: '글' } satisfies AppRouteHandle,
           },
         ],
       },

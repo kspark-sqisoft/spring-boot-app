@@ -68,7 +68,7 @@ export function ProfilePage() {
     <>
       <div className="mb-6">
         <Button variant="ghost" size="sm" className="gap-1 px-0" asChild>
-          <Link to="/posts">← 게시판으로</Link>
+          <Link to="/posts">← 글 목록</Link>
         </Button>
       </div>
 

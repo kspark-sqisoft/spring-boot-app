@@ -8,7 +8,7 @@ export function NotFoundPage() {
         요청한 경로를 찾을 수 없습니다.
       </p>
       <Button asChild variant="outline">
-        <Link to="/posts">게시판으로</Link>
+        <Link to="/">홈으로</Link>
       </Button>
     </div>
   );

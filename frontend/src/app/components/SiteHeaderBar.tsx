@@ -1,41 +1,45 @@
-import { Link } from 'react-router-dom';
-import { Loader2, LogIn, LogOut, MessageSquareText, UserPlus } from 'lucide-react';
+import { Link, NavLink } from 'react-router-dom';
+import { Home, Loader2, LogIn, LogOut, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/features/auth/store/auth-store';
+import { cn } from '@/lib/utils';
 
-/** 상단 툴바 한 줄 — 브랜드(좌) · 인증(우). 모바일은 터치 영역·줄바꿈 최소화 */
+const navLinkClass = ({
+  isActive,
+}: {
+  isActive: boolean;
+}) =>
+  cn(
+    'rounded-md px-2 py-1 text-sm transition-colors',
+    isActive
+      ? 'bg-accent text-foreground font-medium'
+      : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+  );
+
+/** 상단 툴바 — 브랜드·글 목록(좌) · 인증(우). 글쓰기는 목록 페이지 버튼으로 이동 */
 export function SiteHeaderBar() {
   const user = useAuthStore((s) => s.user);
   const ready = useAuthStore((s) => s.ready);
   const logout = useAuthStore((s) => s.logout);
 
   return (
-    <div className="flex w-full min-w-0 items-center justify-between gap-2 sm:gap-4">
-      <Link
-        to="/posts"
-        className="text-primary flex min-w-0 max-w-[min(100%,28rem)] items-center gap-1.5 rounded-md py-1 pr-1 transition-opacity hover:opacity-90 sm:max-w-none sm:gap-2"
-      >
-        <MessageSquareText
-          className="size-6 shrink-0 sm:size-7"
-          aria-hidden
-        />
-        <span className="flex min-w-0 flex-col gap-0.5 leading-tight sm:flex-row sm:items-center sm:gap-2 sm:leading-none">
+    <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 sm:gap-4">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 sm:gap-4">
+        <Link
+          to="/"
+          className="text-primary flex min-w-0 max-w-[min(100%,20rem)] shrink-0 items-center gap-1.5 rounded-md py-1 pr-1 transition-opacity hover:opacity-90 sm:max-w-none sm:gap-2"
+        >
+          <Home className="size-6 shrink-0 sm:size-7" aria-hidden />
           <span className="font-heading truncate text-base font-semibold tracking-tight sm:text-lg">
-            Notice Board
+            Spring Demo
           </span>
-          {import.meta.env.DEV ? (
-            <span
-              className="text-muted-foreground border-border/70 bg-muted/50 font-mono shrink-0 rounded border px-1.5 py-0.5 text-[0.6rem] font-normal tracking-wide sm:text-[0.65rem]"
-              title="백엔드: Spring Boot 4 · Java 17 · REST API (프록시 기본 localhost:3000)"
-            >
-              <span className="sm:hidden">Dev · SB4 · :3000</span>
-              <span className="hidden sm:inline">
-                Dev · Spring Boot 4 · Java 17 · API :3000
-              </span>
-            </span>
-          ) : null}
-        </span>
-      </Link>
+        </Link>
+        <nav aria-label="게시판">
+          <NavLink to="/posts" className={navLinkClass} end>
+            글
+          </NavLink>
+        </nav>
+      </div>
 
       <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
         {!ready ? (

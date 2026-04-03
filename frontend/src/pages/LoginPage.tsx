@@ -49,6 +49,7 @@ export function LoginPage() {
         </CardHeader>
         <CardContent>
           <LoginForm
+            cancelHref="/posts"
             onSuccess={() => navigate(redirectTo, { replace: true })}
           />
         </CardContent>
