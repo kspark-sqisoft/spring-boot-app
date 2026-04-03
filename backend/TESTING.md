@@ -27,7 +27,8 @@ cd backend
 ### 콘솔에 “뭐가 몇 개 통과했는지”가 잘 안 보일 때
 
 - **Gradle 기본 동작**은 테스트 태스크가 조용한 편이라, 예전에는 `> Task :test` 한 줄과 `BUILD SUCCESSFUL` 만 보이는 경우가 많습니다.
-- 이 프로젝트 `build.gradle` 에 **`testLogging`** 과 **마지막 요약 줄**(실행/성공/실패/스킵 개수)을 넣어 두었습니다. `.\gradlew.bat test` 를 **`-q`(quiet) 없이** 실행하면 각 테스트 `PASSED` / `FAILED` 와 요약이 터미널에 나옵니다.
+- 이 프로젝트 `build.gradle` 에 **`testLogging`** 과 **마지막 요약 줄**(ASCII: `total / passed / failed / skipped`)을 넣어 두었습니다. `.\gradlew.bat test` 를 **`-q`(quiet) 없이** 실행하면 각 테스트 `PASSED` / `FAILED` 와 요약이 터미널에 나옵니다.
+- **Windows CMD/일부 터미널**에서는 `@DisplayName` 한글이 깨져 보일 수 있습니다. Gradle·JUnit 동작과는 무관하고 인코딩 문제입니다. PowerShell에서 `chcp 65001` 후 다시 실행하거나, **HTML 리포트**·**IDE 테스트 창**을 보면 한글 이름이 정상입니다.
 - 더 붙이고 싶으면 예시처럼 로그 레벨을 올립니다.
 
 ```powershell

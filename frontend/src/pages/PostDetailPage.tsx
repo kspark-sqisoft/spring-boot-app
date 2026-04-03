@@ -1,10 +1,22 @@
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2, Pencil, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { deletePost, fetchPost, postsKeys } from '@/api/posts';
 import { useAuthStore } from '@/features/auth/store/auth-store';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -105,25 +117,41 @@ export function PostDetailPage() {
                       수정
                     </Link>
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="gap-1.5"
-                    disabled={del.isPending}
-                    onClick={() => {
-                      if (
-                        !window.confirm(
-                          '이 글을 삭제할까요? 되돌릴 수 없습니다.',
-                        )
-                      ) {
-                        return;
-                      }
-                      void del.mutate();
-                    }}
-                  >
-                    <Trash2 className="size-3.5" aria-hidden />
-                    {del.isPending ? '삭제 중…' : '삭제'}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="gap-1.5"
+                        disabled={del.isPending}
+                      >
+                        <Trash2 className="size-3.5" aria-hidden />
+                        {del.isPending ? '삭제 중…' : '삭제'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>이 글을 삭제할까요?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          삭제하면 복구할 수 없습니다. 계속할까요?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>취소</AlertDialogCancel>
+                        <AlertDialogAction
+                          className={cn(
+                            buttonVariants({ variant: 'destructive' }),
+                          )}
+                          disabled={del.isPending}
+                          onClick={() => {
+                            void del.mutate();
+                          }}
+                        >
+                          {del.isPending ? '삭제 중…' : '삭제'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               ) : null}
             </div>
