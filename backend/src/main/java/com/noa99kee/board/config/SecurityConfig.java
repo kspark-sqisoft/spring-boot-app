@@ -1,6 +1,6 @@
 package com.noa99kee.board.config;
 
-import com.noa99kee.board.security.JwtAuthenticationFilter;
+import com.noa99kee.board.auth.filter.JwtAuthenticationFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -22,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  *
  * <p>이 프로젝트는 JWT(Bearer) + httpOnly 리프레시 쿠키를 쓰므로 세션은 끕니다({@link
  * org.springframework.security.config.http.SessionCreationPolicy#STATELESS}),
- * {@link com.noa99kee.board.security.JwtAuthenticationFilter}에서 액세스 토큰을 검사합니다.
+ * {@link com.noa99kee.board.auth.filter.JwtAuthenticationFilter}에서 액세스 토큰을 검사합니다.
  */
 @Configuration
 @EnableWebSecurity

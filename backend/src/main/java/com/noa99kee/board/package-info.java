@@ -1,18 +1,16 @@
 /**
  * 게시판 백엔드 루트 패키지입니다.
  *
- * <p>실무에서 자주 쓰는 나눔은 다음과 같습니다.
+ * <p>기능(feature)마다 {@code controller}, {@code service}, {@code repository}, {@code entity}, {@code dto} 하위 패키지를 두는
+ * 구조입니다. JPA 엔티티는 해당 기능의 {@code entity}·{@code repository}에 모읍니다.
  *
  * <ul>
- *   <li>{@code api} — HTTP 요청을 받는 컨트롤러만
- *   <li>{@code application} — 여러 엔티티를 묶는 애플리케이션 서비스(유스케이스)
- *   <li>{@code dto} — 요청·응답용 record (엔티티와 분리)
- *   <li>{@code domain} — JPA 엔티티·리포지토리(데이터 접근)
- *   <li>{@code auth} — JWT·인증 세션(쿠키) 관련 서비스
- *   <li>{@code posts} — 게시글 유스케이스({@link com.noa99kee.board.posts.PostService})
- *   <li>{@code security} — Spring Security 필터·로그인 주체(Principal)
- *   <li>{@code config} — 설정 클래스(@Configuration)와 프로퍼티 바인딩
- *   <li>{@code common} — 전역 예외 처리·공통 유틸
+ *   <li>{@code auth} — 로그인·JWT·리프레시 쿠키·Security 필터({@code filter}, {@code principal})
+ *   <li>{@code user} — 회원 프로필 API·서비스·엔티티
+ *   <li>{@code post} — 게시글 API·서비스·엔티티
+ *   <li>{@code health} — 헬스체크
+ *   <li>{@code config} — Security, CORS, 업로드 등
+ *   <li>{@code common} — 전역 예외·공통 유틸
  * </ul>
  */
 package com.noa99kee.board;

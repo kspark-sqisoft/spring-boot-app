@@ -1,6 +1,5 @@
 /**
- * 인증에 특화된 서비스({@link com.noa99kee.board.auth.JwtService}, {@link com.noa99kee.board.auth.AuthService})가 있습니다.
- *
- * <p>요청·응답 DTO는 {@link com.noa99kee.board.dto.auth}·{@link com.noa99kee.board.dto.user}에 둡니다.
+ * 인증 기능: {@code controller}, {@code service}, {@code dto}, JWT 필터({@code filter}), Security Principal({@code principal}),
+ * 토큰 해시 유틸({@code util})입니다.
  */
 package com.noa99kee.board.auth;

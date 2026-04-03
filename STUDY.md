@@ -92,12 +92,13 @@ docker compose -f docker-compose.dev.yml up --build
 
 ## 5. 백엔드 패키지 구조 (학습용)
 
+기능(feature)마다 `controller` / `service` / `repository` / `entity` / `dto` 를 두는 형태입니다(루트 패키지는 `com.noa99kee.board`).
+
 - `config` — `SecurityConfig`, `WebConfig`(CORS, `/uploads` 리소스 핸들러), JWT/업로드 설정 바인딩
-- `domain.user` / `domain.post` — JPA 엔티티·리포지토리
-- `auth` — JWT 발급/검증, 회원가입·로그인·리프레시·쿠키
-- `security` — `JwtAuthenticationFilter`, `BoardUserPrincipal`
-- `posts` — 게시글 CRUD·이미지 업로드 URL 검증(`/uploads/posts/` 만 허용)
-- `user` — 안전한 사용자 응답 DTO 변환
+- `auth` — `controller`(회원가입·로그인·로그아웃·리프레시), `service`(`AuthService`, `JwtService`), `dto`, `filter`(`JwtAuthenticationFilter`), `principal`(`BoardUserPrincipal`), `util`(`TokenHasher`)
+- `user` — `controller`(`GET/PATCH/POST /api/auth/me` … 프론트 계약 유지), `service`, `repository`, `entity`, `dto`
+- `post` — `controller`, `service`, `repository`, `entity`, `dto`(게시글 CRUD·이미지 URL 검증, `/uploads/posts/` 만 허용)
+- `health` — `controller`(`GET /api/health`)
 - `common` — 전역 예외 처리(`message`, `statusCode`, `path`, `timestamp`)
 
 보안 규칙 요약:
@@ -161,7 +162,9 @@ docker compose -f docker-compose.dev.yml up --build
 
 ## 8. 테스트
 
-H2 인메모리 DB로 컨텍스트를 띄웁니다. (**로컬 `bootRun` 과 DB 환경이 다릅니다** — 7.4 참고.)
+H2 인메모리 DB와 `test` 프로필로 돌아갑니다. (**로컬 `bootRun` 과 DB 환경이 다릅니다** — 7.4 참고.) 실행 방법·프로필·특정 클래스만 돌리기·Spring Boot 4 테스트 패키지 정리는 **[backend/TESTING.md](backend/TESTING.md)** 에 모아 두었습니다.
+
+빠른 실행만 할 때:
 
 ```powershell
 Set-Location D:\Study\SpringBoot\spring-boot-app\backend
