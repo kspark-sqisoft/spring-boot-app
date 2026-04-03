@@ -19,6 +19,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  * 회원 테이블({@code users})에 매핑되는 JPA 엔티티입니다.
  *
  * <p>비밀번호는 {@code passwordHash}에만 두고, 리프레시 토큰도 DB에는 해시만 저장합니다.
+ *
+ * <p><b>클래스 어노테이션</b> — {@link com.noa99kee.board.post.entity.Post}와 동일하게 {@code @Entity}, {@code @Table},
+ * {@code @EntityListeners(AuditingEntityListener.class)}로 테이블 매핑·생성·수정 시각 자동 채움을 씁니다.
  */
 @Entity
 @Table(name = "users")
@@ -29,9 +32,11 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 
+	/** 로그인 식별자. {@code unique = true}로 DB 유니크 제약을 겁니다. */
 	@Column(nullable = false, unique = true, length = 320)
 	private String email;
 
+	/** BCrypt 등으로 해시된 비밀번호만 저장합니다. */
 	@Column(name = "password_hash", nullable = false, length = 120)
 	private String passwordHash;
 
@@ -41,6 +46,7 @@ public class User {
 	@Column(name = "profile_image_url", length = 512)
 	private String profileImageUrl;
 
+	/** 리프레시 토큰 원문이 아니라 해시만 보관합니다. */
 	@Column(name = "refresh_token_hash", length = 64)
 	private String refreshTokenHash;
 

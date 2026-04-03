@@ -28,6 +28,15 @@ import org.springframework.web.server.ResponseStatusException;
  * 게시글 목록·상세 조회, 작성·수정·삭제와 첨부 이미지 URL 검증·디스크 정리를 담당합니다.
  *
  * <p>작성자만 수정·삭제 가능 같은 규칙은 엔티티를 불러온 뒤 여기서 검사합니다.
+ *
+ * <p><b>어노테이션</b>
+ *
+ * <ul>
+ *   <li>{@code @Service} — 스프링이 컴포넌트 스캔 대상으로 등록하는 서비스(비즈니스) 계층 빈입니다. {@code @Component}와 같이
+ *       싱글톤으로 컨테이너에 올라갑니다.
+ *   <li>{@code @Transactional} — 해당 메서드(또는 클래스 전체)를 하나의 트랜잭션으로 감쌉니다. DB 읽기·쓰기가 한 번에 커밋/롤백되며,
+ *       기본적으로 RuntimeException 시 롤백됩니다. 조회 전용 메서드에는 생략하거나 읽기 전용 최적화를 붙이기도 합니다.
+ * </ul>
  */
 @Service
 public class PostService {

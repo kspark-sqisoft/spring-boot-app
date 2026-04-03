@@ -27,38 +27,48 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
- * 게시글 테이블({@code posts}) 엔티티입니다. 작성자는 {@link User}에 다대일로 연결됩니다.
+ * 게시글(posts) JPA 엔티티. User와 다대일.
  *
- * <p>첨부 이미지 URL 목록은 PostgreSQL JSON 컬럼으로 저장합니다({@code @JdbcTypeCode}).
+ * <p>클래스 어노테이션: Entity(영속), Table(name=posts), EntityListeners(AuditingEntityListener)로 생성·수정 시각 자동
+ * 채움. BoardApplication의 EnableJpaAuditing과 함께 동작.
  */
 @Entity
 @Table(name = "posts")
 @EntityListeners(AuditingEntityListener.class)
 public class Post {
 
+	/** PK. Id + GeneratedValue(UUID). */
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 
+	/** 제목. Column nullable false, length 200. */
 	@Column(nullable = false, length = 200)
 	private String title;
 
+	/** 본문. Column columnDefinition text. */
 	@Column(nullable = false, columnDefinition = "text")
 	private String content;
 
+	/** 이미지 URL 목록. JdbcTypeCode(구조화 컬럼) + Column image_urls. */
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "image_urls", nullable = false)
 	private List<String> imageUrls = new ArrayList<>();
 
+	/**
+	 * 작성자. ManyToOne(LAZY), JoinColumn(author_id), OnDelete(SET_NULL).
+	 */
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "author_id")
 	@OnDelete(action = OnDeleteAction.SET_NULL)
 	private User author;
 
+	/** 생성 시각. CreatedDate, Column updatable false. */
 	@CreatedDate
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private Instant createdAt;
 
+	/** 수정 시각. LastModifiedDate. */
 	@LastModifiedDate
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
