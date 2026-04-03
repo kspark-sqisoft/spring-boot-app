@@ -1,0 +1,13 @@
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+RUN apk add --no-cache bash curl
+COPY docker-dev-entrypoint.sh /usr/local/bin/docker-dev-entrypoint.sh
+RUN tr -d '\r' < /usr/local/bin/docker-dev-entrypoint.sh > /tmp/docker-dev-entrypoint.sh \
+	&& mv /tmp/docker-dev-entrypoint.sh /usr/local/bin/docker-dev-entrypoint.sh \
+	&& chmod +x /usr/local/bin/docker-dev-entrypoint.sh
+COPY gradlew build.gradle settings.gradle ./
+COPY gradle gradle
+RUN chmod +x gradlew && ./gradlew dependencies --no-daemon -x test || true
+EXPOSE 3000
+ENV SERVER_PORT=3000
+ENTRYPOINT ["/usr/local/bin/docker-dev-entrypoint.sh"]
